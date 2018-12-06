@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <style>
+        body {
+            background: rgb(177, 177, 177);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="app">
+        <p> {{ message }}</p>
+        <hr>
+        <input v-model="bredde" />
+        <input v-model="hoyde" />
+        <button @click="enterFigure()">ny figur</button>
+        <hr>
+        <svg id="mainframe" xmlns="http://www.w3.org/2000/svg" width="800" height="400" xmlns="http://www.w3.org/2000/svg"
+            version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" @click="createFigAtCoord($event)">
+
+            <g v-for="figures in collOfFigures" stroke="yellow" stroke-width="2" fill="pink">
+                <rect :width=figures.w :height=figures.h :x=figures.x :y=figures.y>
+            </g>
+
+        </svg>
+
+    </div>
+
+
+
+    <script>
+        var app = new Vue({
+            el: '#app',
+            data: {
+                message: 'Hello Vue!',
+                arrers: [
+                    { navn: "Bjørn", poeng: 20 },
+                    { navn: "Charlotte", poeng: 40 },
+                    { navn: "Ragnhild", poeng: 23 }
+                ],
+                bredde: 100,
+                hoyde: 70,
+
+                collOfFigures: [
+
+                ],
+                selected: 0
+            },
+            methods: {
+                calibrateClick: function () {
+
+                },
+
+                enterFigure: function () {
+                    var newInColl = { w: 20, h: 120, x: 90, y: 280 };
+                    this.collOfFigures.push(newInColl);
+                },
+
+                changeState: function () {
+                    alert("styggebukk")
+                },
+
+                createFigAtCoord: function (evt) {
+                    var cursvg = evt.target;
+                    pt = cursvg.createSVGPoint();
+                    pt.x = evt.clientX;
+                    pt.y = evt.clientY;
+                    var svgP = pt.matrixTransform(cursvg.getScreenCTM().inverse());
+                    var newInColl = { w: 20, h: 20, x: Math.round(svgP.x), y: Math.round(svgP.y) };
+                    this.collOfFigures.push(newInColl);
+                }
+            }
+        })
+
+
+
+    </script>
+
+</body>
+
+</html>

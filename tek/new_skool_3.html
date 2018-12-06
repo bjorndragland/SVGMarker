@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <style>
+        .container {
+            display: flex;
+            /* or inline-flex */
+        }
+
+        #svgwrapper {
+            padding-top: 51px;
+            min-width: 400px;
+        }
+
+        .tekmarkuplogo {
+            display: block;
+            height: auto;
+            width: 90px;
+            padding-top: 5px;
+            margin-right: 25px;
+        }
+
+        #checkit {
+            display: flex;
+            flex: 1;
+            width: 600px;
+        }
+
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th,
+        td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+
+        .panel-heading h3 {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            line-height: normal;
+            width: 75%;
+            padding-top: 8px;
+        }
+
+        rect.btn {
+            stroke: black;
+            fill: #fff;
+            fill-opacity: 0;
+            stroke-opacity: 100;
+        }
+    </style>
+</head>
+
+<body onload="populatefromtype()">
+    <div id="controls" class="controls">
+
+
+        <input type="button" id="importpic" onclick="importpic()" value="muliggjør sletting" />
+        <!-- <input type="button" id="toggleit" onclick="toggleit()" value="Grid off" /> -->
+
+        <select id="selector" onchange="readchange(this)">
+            <option>motor.jpg</option>
+            <option>engine_bay_grsc.jpg</option>
+            <option>conveyor_system_design2.jpg</option>
+            <option>flexo.jpg</option>
+            <option>machine.jpg</option>
+            <option>engmods.jpg</option>
+            <option>plant.jpg</option>
+            <option>logopic.png</option>
+        </select>
+
+        <select id="markertype" onchange="populatefromtype()">
+            <option id="type2" value="type2">kun ballong</option>
+            <option id="type1" value="type1">ballong linje</option>
+            <option id="type3" value="type3">stor sirkel</option>
+            <option id="type4" value="type4">tekst</option>
+            <option id="type5" value="type5">tabell</option>
+            <option id="type6" value="type6">mål lineært</option>
+            <option id="type7" value="type7">mål diameter</option>
+            <option id="type8" value="type8">mål radius</option>
+        </select>
+
+        <select id="markerspec">
+
+        </select>
+
+        <!-- <input type="button" id="addTable" onclick="ItIs()" value="tell" /> -->
+        <!-- <input type="button" id="createSVGTable" onclick="createSVGTable()" value="lag tabell" /> -->
+        <button id="addcanvaser" onclick="addCanvas()">1 add canvas</button>
+        <button id="gatherer" onclick="collectSVG()">2 samle svg</button>
+        <button id="gatherer" onclick="convertImage()">3 konv img</button>
+        <button id="gatherer" onclick="lagreSVG()">4 lagre svg</button>
+
+    </div>
+    <div class="container">
+        <div class="flex-item">
+            <div id="svgcontainer">
+
+                <svg id="svgmain" version="1.1" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#"
+                    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg"
+                    xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="svg2"
+                    height="400" width="600" onmousemove="drag(evt)" onmouseup="release(evt)">
+                    <image xlink:href="motor.jpg" width="600" height="400" preserveAspectRatio="none" id="svgimage" x="0"
+                        y="0" />
+                    <rect id="jaja" class="btn" width="600" height="400" onclick="starter(evt)" fill="none" />
+                </svg>
+
+
+            </div>
+        </div>
+        <div class="flex-item">
+            <div class="checkit">
+                <table id="innholdstabell">
+                    <tr>
+                        <th>Nr.</th>
+                        <th>Beskrivelse</th>
+                        <th>Slett</th>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+    <script>
+        /*
+                function ItIs() {
+                    var IDtoTest = "1-bt";
+                    var partOfIt = IDtoTest.slice(0, 1);
+                    alert(partOfIt);
+                }
+        */
+
+        // fra nettet:
+        var dragging = false;
+        var clickx = 0;
+        var clicky = 0;
+        var copy;
+        var schopy;
+        var teksten;
+        var annoten;
+        var markTyper;
+
+
+
+        function addCanvas() {
+            var mycanvas = document.createElement("canvas");
+            mycanvas.setAttribute("id", "mycanvas");
+            mycanvas.setAttribute("width", "600");
+            mycanvas.setAttribute("height", "400");
+            document.body.appendChild(mycanvas);
+        }
+
+
+        function importpic() {
+            var tabelette = document.getElementById("innholdstabell");
+            tabelette.addEventListener("click", function (e) {
+                tellMe(e);
+            });
+        }
+
+        function tellMe(e) {
+            if (e.target && e.target.nodeName == "BUTTON") {
+                //alert(e.target.id);
+                deleteItems(e.target.id, e.target, e);
+            }
+        }
+
+
+        function deleteItems(IdDel, buttDel, e) {
+            var Idbase = IdDel.replace("butt", "");
+            var delit1 = document.getElementById("1-" + Idbase + "-b");
+            var delit2 = document.getElementById("1-" + Idbase + "-bt");
+            delit2.parentNode.removeChild(delit2);
+            delit1.parentNode.removeChild(delit1);
+            var tabeletto = document.getElementById("innholdstabell")
+            //var ii = buttDel.parentNode.rowIndex;
+            var ii = e.target.parentNode.parentNode.rowIndex;
+            tabeletto.deleteRow(ii);
+        }
+
+
+        function startDragging(evt) {
+            // Get the mouse location:
+            var copy0 = evt.target.getAttribute("id");
+            markTyper = copy0.slice(0, 1);
+            markTyperEnd = copy0.slice(copy0.length - 2, 1);
+            //alert(copy0);
+            //console.log(copy0);
+            console.log(markTyperEnd);
+            copy = document.getElementById(copy0);
+            schopy = document.getElementById(copy0 + "l");
+            teksten = document.getElementById(copy0 + "t");
+            punktet = document.getElementById(copy0 + "p");
+            annoten = document.getElementById(copy0);
+            var position = document.getElementById("svgmain").createSVGPoint();
+            position.x = evt.clientX;
+            position.y = evt.clientY;
+            var matrix = copy.getScreenCTM();
+            var correctPosition = position.matrixTransform(matrix.inverse());
+            lastx = correctPosition.x;
+            lasty = correctPosition.y;
+
+            dragging = true;
+        }
+
+        function drag(evt) {
+            if (dragging) {
+                var position = document.getElementById("svgmain").createSVGPoint();
+                position.x = evt.clientX;
+                position.y = evt.clientY;
+                var matrix = copy.getScreenCTM();
+                var correctPosition = position.matrixTransform(matrix.inverse());
+                newx = correctPosition.x;
+                newy = correctPosition.y;
+
+                if (newx != lastx) {
+                    if (markTyper == "1" || markTyper == "3") {
+                        copyx = parseFloat(copy.getAttributeNS(null, "cx"));
+                        copy.setAttributeNS(null, "cx", Math.round(copyx + newx - lastx));
+                        teksten.setAttributeNS(null, "x", Math.round(copyx + newx - lastx));
+                        if (markTyper == "3") {
+                            schopy.setAttributeNS(null, "x1", Math.round(copyx + newx - lastx));
+                        }
+                    } else if (markTyper == "2") {
+                        copyx = parseFloat(annoten.getAttributeNS(null, "x"));
+                        annoten.setAttributeNS(null, "x", Math.round(copyx + newx - lastx));
+                    }
+                    lastx = newx;
+                }
+
+                if (newy != lasty) {
+                    if (markTyper == "1" || markTyper == "3") {
+                        copyy = parseFloat(copy.getAttributeNS(null, "cy"));
+                        copy.setAttributeNS(null, "cy", Math.round(copyy + newy - lasty));
+                        teksten.setAttributeNS(null, "y", Math.round((copyy + newy - lasty) + 4));
+                        if (markTyper == "3") {
+                            schopy.setAttributeNS(null, "y1", Math.round(copyy + newy - lasty));
+                        }
+                    } else if (markTyper == "2") {
+                        copyy = parseFloat(annoten.getAttributeNS(null, "y"));
+                        annoten.setAttributeNS(null, "y", Math.round(copyy + newy - lasty));
+                    }
+                    lasty = newy;
+                }
+            }
+        }
+
+        function release(evt) {
+            dragging = false;
+        }
+        // slutt nettet
+
+
+        function collectSVG() {
+            //brukes ikke nå
+            var s = new XMLSerializer();
+            var d = document.getElementById("svgmain");
+            var str = s.serializeToString(d);
+            console.log(str);
+        }
+
+
+        function convertSVG() {
+            var s = new XMLSerializer();
+            var d = document.getElementById("svgmain");
+            var str = s.serializeToString(d);
+            var image2 = new Image();
+            image2.src = 'data:image/svg+xml;base64,' + window.btoa(unescape(encodeURIComponent(str)))
+            return image2;
+        }
+
+
+        function convertImage() {
+            var canvas2 = document.createElement('canvas');
+            var ctx2 = canvas2.getContext('2d');
+            var image3 = document.getElementById("svgimage");
+            var href = image3.getAttributeNS("http://www.w3.org/1999/xlink", "href");
+            var image4 = new Image;
+            image4.crossOrigin = "anonymous";
+            image4.src = href;
+            image4.onload = function () {
+                canvas2.width = image4.width;
+                canvas2.height = image4.height;
+                ctx2.drawImage(image4, 0, 0);
+                //image3.setAttributeNS("http://www.w3.org/1999/xlink", "href", canvas2.toDataURL('image/png'));
+                image3.setAttribute("xlink:href", canvas2.toDataURL('image/png'));
+            }
+        }
+
+        function lagreSVG() {
+            var canvas = document.querySelector("canvas"),
+                context = canvas.getContext("2d");
+            var image = new Image;
+            image = convertSVG();
+            image.onload = function () {
+                context.drawImage(image, 0, 0);
+                var a = document.createElement("a");
+                a.download = "fallback.png";
+                a.href = canvas.toDataURL("image/png");
+                a.click();
+            };
+        }
+
+
+        var nextNumber = 1;
+
+        function populatefromtype() {
+
+            var optionales = {
+                type1: ["hvit ballong og linje", "gul ballong og linje", "grønn ballong og linje"],
+                type2: ["hvit ballong", "gul ballong"],
+                type3: ["6", "7"],
+                type4: ["8", "9"],
+                type5: ["8", "9"]
+            }
+            var optionvalues
+            document.getElementById('markerspec').options.length = 0;
+            for (i = 0; i < optionales[document.getElementById("markertype").value].length; i++) {
+                optionvalues = document.createElement("option");
+                optionvalues.setAttribute("value", optionales[document.getElementById("markertype").value][i]);
+                optionvalues.text = optionales[document.getElementById("markertype").value][i];
+                document.getElementById("markerspec").appendChild(optionvalues);
+            }
+        }
+
+
+        var cursvg
+        var counterID = 1
+        var arrayofpoints = [0, 0];
+        var SVGtek = {
+            CreateGroup: function (x, y) {
+                var group1 = document.createElementNS('http://www.w3.org/2000/svg', "g");
+                return group1;
+            },
+            CreatePoint: function (x, y, markShort) {
+                pt.x = x;
+                pt.y = y;
+                svgP = pt.matrixTransform(cursvg.getScreenCTM().inverse());
+                var point1 = document.createElementNS('http://www.w3.org/2000/svg', "circle");
+                point1.setAttribute("cx", Math.round(svgP.x));
+                point1.setAttribute("cy", Math.round(svgP.y));
+                point1.setAttribute("r", 5);
+                point1.setAttribute("onmousedown", "startDragging(evt)");
+                point1.setAttributeNS(null, "id", markShort + "-" + nextNumber + "-p");
+                console.log(markShort + "-" + nextNumber + "-p");
+                return point1;
+            },
+            CreateBalloon: function (x, y, markShort) {
+                pt.x = x;
+                pt.y = y;
+                svgP = pt.matrixTransform(cursvg.getScreenCTM().inverse());
+                var point2 = document.createElementNS('http://www.w3.org/2000/svg', "circle");
+                point2.setAttribute("cx", Math.round(svgP.x));
+                point2.setAttribute("cy", Math.round(svgP.y));
+                point2.setAttribute("r", 15);
+                point2.setAttribute("onmousedown", "startDragging(evt)");
+                point2.setAttributeNS(null, "id", markShort + "-" + nextNumber + "-b");
+                console.log(markShort + "-" + nextNumber + "-b");
+                return point2;
+            },
+            CreateText: function (x, y, markShort) {
+                pt.x = x;
+                pt.y = y;
+                svgP = pt.matrixTransform(cursvg.getScreenCTM().inverse());
+                var newtextelem = document.createElementNS('http://www.w3.org/2000/svg', "text");
+                var newtextcont = document.createTextNode(nextNumber);
+                newtextelem.setAttributeNS(null, "x", Math.round(svgP.x));
+                newtextelem.setAttributeNS(null, "y", Math.round(svgP.y + 4));
+                newtextelem.setAttributeNS(null, "font-size", 15);
+                newtextelem.setAttributeNS(null, "font-family", "sans-serif");
+                newtextelem.setAttributeNS(null, "fill", "white");
+                newtextelem.setAttributeNS(null, "text-anchor", "middle");
+                newtextelem.setAttributeNS(null, "id", markShort + "-" + nextNumber + "-bt");
+                newtextelem.appendChild(newtextcont);
+                console.log(markShort + "-" + nextNumber + "-bt");
+                return newtextelem;
+            },
+            CreateLine: function (x1, y1, x2, y2, markShort) {
+                var line1 = document.createElementNS('http://www.w3.org/2000/svg', "line");
+                var IDtoPut
+                pt.x = x1;
+                pt.y = y1;
+                svgP = pt.matrixTransform(cursvg.getScreenCTM().inverse());
+                line1.setAttribute("x1", Math.round(svgP.x));
+                line1.setAttribute("y1", Math.round(svgP.y));
+                line1.setAttribute("x2", Math.round(svgP.x));
+                line1.setAttribute("y2", Math.round(svgP.y));
+                line1.setAttribute("stroke", "black");
+                line1.setAttribute("stroke-width", "1");
+                counterID += 1;
+                line1.setAttribute("id", "ID" + counterID);
+                console.log("ID" + counterID);
+                return line1;
+            },
+            FinishLine: function (x2, y2, counterID, markShort) {
+                var alertnumber = (counterID / 2);
+                var alerttext, lineToEnd
+                if (Number.isInteger(alertnumber)) {
+                    alerttext = "partall";
+                    var IDtoDelete = "ID" + (counterID - 1);
+                    //alert(IDtoDelete);
+                    lineToDelete = document.getElementById(IDtoDelete);
+                    //lineToDelete.parentElement.removeChild(lineToDelete);
+                } else {
+                    alerttext = "oddetall";
+                    var IDtoEnd = "ID" + (counterID - 1);
+                    pt.x = x2;
+                    pt.y = y2;
+                    svgP = pt.matrixTransform(cursvg.getScreenCTM().inverse());
+                    lineToEnd = document.getElementById(IDtoEnd);
+                    lineToEnd.setAttribute("x1", Math.round(svgP.x));
+                    lineToEnd.setAttribute("y1", Math.round(svgP.y));
+                    lineToEnd.setAttribute("id", markShort + "-" + nextNumber + "-bl");
+                    console.log(markShort + "-" + nextNumber + "-bl");
+                }
+                return counterID;
+            },
+            CreateAnnotation: function (x, y, markShort) {
+                pt.x = x;
+                pt.y = y;
+                svgP = pt.matrixTransform(cursvg.getScreenCTM().inverse());
+                var newannotelem = document.createElementNS('http://www.w3.org/2000/svg', "text");
+                var newtextannocont = document.createTextNode("text here");
+                newannotelem.setAttributeNS(null, "x", Math.round(svgP.x));
+                newannotelem.setAttributeNS(null, "y", Math.round(svgP.y + 4));
+                newannotelem.setAttributeNS(null, "font-size", 15);
+                newannotelem.setAttributeNS(null, "font-family", "sans-serif");
+                newannotelem.setAttributeNS(null, "fill", "black");
+                newannotelem.setAttributeNS(null, "text-anchor", "middle");
+                newannotelem.setAttributeNS(null, "id", markShort + "-" + nextNumber + "-a");
+                newannotelem.setAttribute("onmousedown", "startDragging(evt)");
+                newannotelem.appendChild(newtextannocont);
+                console.log(markShort + "-" + nextNumber + "-a");
+                return newannotelem;
+            },
+            CreateTable: function (x, y, markShort) {
+                pt.x = x;
+                pt.y = y;
+                svgP = pt.matrixTransform(cursvg.getScreenCTM().inverse());
+                // var newg = document.createElementNS('http://www.w3.org/2000/svg', "g");
+                var newrect = document.createElementNS('http://www.w3.org/2000/svg', "rect");
+                var newrectfilter = document.createElementNS('http://www.w3.org/2000/svg', "filter");
+                var newblur = document.createElementNS('http://www.w3.org/2000/svg', "feGaussianBlur");
+                newblur.setAttributeNS(null, "id", "blur");
+                newblur.setAttributeNS(null, "stdDeviation", 10);
+                newrect.setAttributeNS(null, "x", Math.round(svgP.x));
+                newrect.setAttributeNS(null, "y", Math.round(svgP.y));
+                newrect.setAttributeNS(null, "width", 150);
+                newrect.setAttributeNS(null, "height", 75);
+                newrect.setAttributeNS(null, "fill", "white");
+                newrect.setAttribute("stroke", "black");
+                newrect.setAttribute("stroke-width", "1");
+                newrect.setAttribute("opacity", "0.5");
+                newrect.setAttributeNS(null, "id", markShort + "-" + nextNumber + "-r");
+                //newg.setAttributeNS(null, "id", markShort + "-" + nextNumber + "-r");
+                newrect.setAttribute("onmousedown", "startDragging(evt)");
+                newrectfilter.appendChild(newblur);
+                newrect.appendChild(newrectfilter);
+                //newg.setAttribute("onmousedown", "startDragging(evt)");
+                // newg.appendChild(newrect);
+                return newrect;
+            }
+        }
+
+        function starter(evt) {
+            var markerType = document.getElementById("markertype").value;
+            cursvg = evt.target.parentElement;
+            //adjust clickcoords
+            pt = cursvg.createSVGPoint();
+            pt.x = 100;
+            pt.y = 100;
+            var svgP = pt.matrixTransform(cursvg.getScreenCTM().inverse());
+            var markShort;
+            if (markerType == "type1") {
+                markShort = "3";
+                if (arrayofpoints[arrayofpoints.length - 1] == 0) {
+                    //alert("første");
+                    cursvg.appendChild(SVGtek.CreatePoint(evt.clientX, evt.clientY, markShort));
+                    cursvg.appendChild(SVGtek.CreateLine(evt.clientX, evt.clientY, evt.clientX, evt.clientY, markShort));
+                    SVGtek.FinishLine(evt.clientX, evt.clientY, counterID, markShort);
+                    arrayofpoints.push(1);
+                } else {
+                    //alert("andre");
+                    cursvg.appendChild(SVGtek.CreateBalloon(evt.clientX, evt.clientY, markShort));
+                    cursvg.appendChild(SVGtek.CreateLine(evt.clientX, evt.clientY, evt.clientX, evt.clientY, markShort));
+                    cursvg.appendChild(SVGtek.CreateText(evt.clientX, evt.clientY, markShort));
+                    SVGtek.FinishLine(evt.clientX, evt.clientY, counterID, markShort);
+                    arrayofpoints.push(0);
+                    addToTable();
+                }
+            } else if (markerType == "type2") {
+                markShort = "1";
+                cursvg.appendChild(SVGtek.CreateBalloon(evt.clientX, evt.clientY, markShort));
+                cursvg.appendChild(SVGtek.CreateText(evt.clientX, evt.clientY, markShort));
+                arrayofpoints.push(0);
+                addToTable();
+            } else if (markerType == "type4") {
+                markShort = "2";
+                cursvg.appendChild(SVGtek.CreateAnnotation(evt.clientX, evt.clientY, markShort));
+                arrayofpoints.push(0);
+                addToTable();
+            } else if (markerType == "type5") {
+                markShort = "2";
+                cursvg.appendChild(SVGtek.CreateTable(evt.clientX, evt.clientY, markShort));
+                arrayofpoints.push(0);
+                //addToTable();
+            }
+        }
+
+        function addToTable() {
+            //legger til inje i tabell
+            var tabellos = document.getElementById("innholdstabell");
+            var newLiners = document.createElement("tr");
+            //newLiners.setAttribute("onmouseover", "highlighter(this, 'on')");
+            //newLiners.setAttribute("onmouseleave", "highlighter(this, 'off')");
+            newLiners.setAttribute("id", nextNumber + "td");
+            var newNummers = document.createElement("td");
+            var newBeskrivelse = document.createElement("td");
+            var deleteRowTd = document.createElement("td");
+            var deleteRowBut = document.createElement("button");
+            deleteRowBut.setAttribute("id", nextNumber + "butt");
+
+            //deleteRowBut.setAttribute("value", "slett");
+            deleteRowBut.innerHTML = "slett";
+            deleteRowTd.appendChild(deleteRowBut);
+            //deleteRowBut.addEventListener("click", alert("hallo"),false);
+            newNummers.setAttribute("contenteditable", "true");
+            newBeskrivelse.setAttribute("contenteditable", "true");
+            newLiners.appendChild(newNummers);
+            newLiners.appendChild(newBeskrivelse);
+            newLiners.appendChild(deleteRowTd);
+            newNummers.innerHTML = nextNumber;
+            newBeskrivelse.innerHTML = "jajaja";
+            tabellos.appendChild(newLiners);
+            nextNumber = nextNumber + 1;
+        }
+
+        function highlighter(theone, stats) {
+            var numberToHighlight = document.getElementById(theone.rowIndex);
+            var balloonToHighLight = document.getElementById(theone.rowIndex + "-b");
+            if (stats == "on") {
+                //numberToHighlight.setAttributeNS(null, "fill", "red");
+                balloonToHighLight.setAttributeNS(null, "fill", "yellow");
+            } else {
+                //numberToHighlight.setAttributeNS(null, "fill", "white");
+                balloonToHighLight.setAttributeNS(null, "fill", "black");
+            }
+        }
+
+        function lightTable(idToLight, actions) {
+            var myRow = document.getElementById(idToLight + "td");
+            if (actions == "on") {
+                myRow.setAttribute("style", "background-color: yellow");
+            } else {
+                myRow.setAttribute("style", "background-color: white");
+            }
+        }
+
+        function createTemp2() {
+            var collOfLinos = [];
+            function ObjOfLinos(lx1, ly1, lx2, ly2, PosNo, Desc) {
+                this.lx1 = lx1;
+                this.ly1 = ly1;
+                this.lx2 = lx2;
+                this.ly2 = ly2;
+                this.PosNo = PosNo;
+                this.Desc = Desc;
+            }
+
+            var FirstLine = new ObjOfLinos("20", "20", "50", "260", "1", "Blodpudding");
+            var SecondLine = new ObjOfLinos("75", "85", "310", "140", "2", "Beinmarg");
+            collOfLinos.push(FirstLine);
+            collOfLinos.push(SecondLine);
+            console.log(collOfLinos);
+            createTheLines(FirstLine);
+        }
+
+        // nytt 29.08.2017
+
+        function createTheLines(LineToCreate) {
+            var theSVG = document.getElementById("svgmain");
+            var point1x1 = LineToCreate.lx1;
+            var point1y1 = LineToCreate.ly1;
+            var point2x1 = LineToCreate.lx2;
+            var point2y2 = LineToCreate.ly2;
+            var svgLine = document.createElementNS('http://www.w3.org/2000/svg', "line");
+            svgLine.setAttribute("x1", point1x1);
+            svgLine.setAttribute("y1", point1y1);
+            svgLine.setAttribute("x2", point2x1);
+            svgLine.setAttribute("y2", point2y2);
+            svgLine.setAttribute("y2", point2y2);
+            svgLine.setAttribute("stroke", "black");
+            svgLine.setAttribute("stroke-width", "1");
+            theSVG.appendChild(svgLine);
+        }
+
+
+        function dragline(evt) {
+        }
+
+        /*
+        function toggleit() {
+            var butty = document.getElementById("toggleit");
+            if (butty.getAttribute("value") == "Grid off") {
+                butty.setAttribute("value", "Grid on");
+                butty.setAttribute("style", "background-color: grey");
+            } else {
+                butty.setAttribute("value", "Grid off");
+                butty.setAttribute("style", "background-color: light-grey");
+            }
+        }
+*/
+
+        function readchange(theone) {
+            var picco = theone.value;
+            var svg = document.getElementById("svgmain");
+            var svgDoc = svg.contentDocument;
+            var bildet = svg.getElementById("svgimage");
+            //var bildeadr = bildet.setAttributeNS(null, "href", picco);
+            var bildeadr = bildet.setAttribute("xlink:href", picco);
+        }
+    </script>
+</body>
+
+</html>
