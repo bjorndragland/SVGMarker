@@ -10,17 +10,50 @@
         body {
             background: rgb(177, 177, 177);
         }
+        
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+}
+
+.modalContainer {
+    width: 350px;
+    background: rgb(61, 61, 61);
+    color:white;
+    margin: auto;
+    margin-top: 44px;
+}
+
+.modalHeading {
+    padding: 6px;
+    background: rgb(123, 130, 143);
+    color: white;
+}
+
+.modalContent {
+    min-height: 150px;
+    padding: 24px;
+}
+
     </style>
 </head>
 
 <body>
 
+
+
     <div id="app">
+
         <p> {{ message }}</p>
         <hr>
         <input v-model="bredde" />
         <input v-model="hoyde" />
         <button @click="enterFigure()">ny figur</button>
+        <button @click="insertBalloon()">ny figur 2</button>
         <hr>
         <svg id="mainframe" xmlns="http://www.w3.org/2000/svg" width="800" height="400" xmlns="http://www.w3.org/2000/svg"
             version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" @click="createFigAtCoord($event)">
@@ -34,7 +67,23 @@
     </div>
 
 
+    <input type="file" onchange="previewFile()"><br>
+    <img src="" height="400" alt="Image preview...">
 
+
+
+
+
+
+    <svg id="svgmain" version="1.1" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#"
+        xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg"
+        xmlns:xlink="http://www.w3.org/1999/xlink" height="400" width="600" onmousemove="drag(evt)" onmouseup="release(evt)">
+        <image width="600" height="400" preserveAspectRatio="none" id="svgimage" x="0" y="0" xlink:href="motor.jpg" />
+        <rect id="jaja" class="btn" width="600" height="400" onclick="starter(evt)" fill="none"></rect>
+    </svg>
+
+    <button onclick="lagretblob()">klikk lagretblob</button>
+    <!-- <button onclick="nyblob()">klikk lagretblob</button> -->
     <script>
         var app = new Vue({
             el: '#app',
@@ -62,9 +111,12 @@
                     var newInColl = { w: 20, h: 120, x: 90, y: 280 };
                     this.collOfFigures.push(newInColl);
                 },
+                insertBalloon: function () {
+
+                },
 
                 changeState: function () {
-                    alert("styggebukk")
+                    alert("jaja")
                 },
 
                 createFigAtCoord: function (evt) {
@@ -80,6 +132,41 @@
         })
 
 
+        function lagretblob() {
+            var preview = document.querySelector('img');
+            var inSVG = document.getElementById("svgmain");
+            var inSVGDoc = inSVG.contentDocument;
+            var inBildet = inSVG.getElementById("svgimage");
+
+            var inBildeadr = inBildet.setAttribute("xlink:href", blobby);
+
+        }
+
+        function nyblob() {
+            var inSVG = document.getElementById("svgmain");
+            var inBildet = inSVG.getElementById("svgimage");
+            var inBildeadr = inBildet.setAttribute("xlink:href", blobby);
+
+        }
+
+        function previewFile() {
+            var preview = document.querySelector('img');
+            var file = document.querySelector('input[type=file]').files[0];
+            var reader = new FileReader();
+
+            var inSVG = document.getElementById("svgmain");
+            var inBildet = inSVG.getElementById("svgimage");
+            var inBildeadr
+
+            reader.addEventListener("load", function () {
+                //preview.src = reader.result;
+                inBildeadr = inBildet.setAttribute("xlink:href", reader.result);
+            }, false);
+
+            if (file) {
+                reader.readAsDataURL(file);
+            }
+        }
 
     </script>
 
