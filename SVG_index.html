@@ -7,38 +7,94 @@
     <title>Document</title>
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
     <style>
-        body {
-            background: rgb(177, 177, 177);
+        * {
+            margin: 0;
+            padding: 0;
+            font-family: sans-serif;
+            font-size: 11px;
         }
         
-.modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.4);
-}
+        body {
+            background: rgb(114, 114, 114);
+        }
 
-.modalContainer {
-    width: 350px;
-    background: rgb(61, 61, 61);
-    color:white;
-    margin: auto;
-    margin-top: 44px;
-}
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.4);
+        }
 
-.modalHeading {
-    padding: 6px;
-    background: rgb(123, 130, 143);
-    color: white;
-}
+        .modalContainer {
+            width: 450px;
+            background: rgb(61, 61, 61);
+            color: white;
+            margin: auto;
+            margin-top: 44px;
+        }
 
-.modalContent {
-    min-height: 150px;
-    padding: 24px;
-}
+        .modalHeading {
+            padding: 6px;
+            background: rgb(123, 130, 143);
+            color: white;
+        }
 
+        .modalContent {
+            min-height: 250px;
+            padding: 24px;
+        }
+        .close {
+            background: rgb(173, 64, 64);;
+            padding: 3px 9px;
+            border: none;
+            color: white;
+        }
+
+        .buttonEnter {
+            background: rgb(64, 138, 64);
+            margin-left:2px;
+            margin-right:2px;
+            margin-top: 19px;
+            margin-bottom: 9px;
+            padding: 9px 15px;
+            border: none;
+            color: white;
+        }
+
+        .buttonCancel {
+            background: rgb(173, 64, 64);
+            margin-left:2px;
+            margin-right:2px;
+            margin-top: 19px;
+            margin-bottom: 9px;
+            padding: 9px 15px;
+            border: none;
+            color: white;
+        }
+
+        .inputDiv {
+            padding:6px 6px;
+        }
+
+        .fleft {
+            float: left;
+        }
+
+        .fright {
+            float: right;
+        }
+
+        .fmiddle {
+            display: block;
+            margin: auto;
+            padding:10px;
+        }
+
+        .clear {
+            clear: both;
+        }
     </style>
 </head>
 
@@ -47,43 +103,62 @@
 
 
     <div id="app">
+        <!-- modal for div stuff -->
+        <div id="modalSpiller" class="modal" v-if="showModal">
+            <div class="modalContainer">
+                <div class="modalHeading">
+                    <p class="fleft">Registrer spiller</p>
+                    <button class="fright close" @click="showModal = false">X</button>
+                    <div class="clear"></div>
+                </div>
+                <div class="modalContent">
 
-        <p> {{ message }}</p>
+                    <div class="inputDiv">
+                        <label for="Spiller" class="fleft"><b>Fornavn</b></label>
+                        <input type="text" name="poeng" class="fright inputPlayer">
+                        <div class="clear"></div>
+                    </div>
+                    <hr>
+
+                    <button class="buttonEnter fright" @click="showModal = false">Legg til Resultat</button>
+                    <button class="buttonCancel fright" @click="showModal = false">Avbryt</button>
+                    <div class="clear"></div>
+                </div>
+            </div>
+        </div>
+
+
+
         <hr>
         <input v-model="bredde" />
         <input v-model="hoyde" />
         <button @click="enterFigure()">ny figur</button>
         <button @click="insertBalloon()">ny figur 2</button>
+        <button @click="startModal()">modal</button>
         <hr>
-        <svg id="mainframe" xmlns="http://www.w3.org/2000/svg" width="800" height="400" xmlns="http://www.w3.org/2000/svg"
-            version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" @click="createFigAtCoord($event)">
-
-            <g v-for="figures in collOfFigures" stroke="yellow" stroke-width="2" fill="pink">
-                <rect :width=figures.w :height=figures.h :x=figures.x :y=figures.y>
+        <svg id="mainframe" xmlns="http://www.w3.org/2000/svg" width="600" height="400" xmlns="http://www.w3.org/2000/svg"
+            version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink">
+            <image width="600" height="400" preserveAspectRatio="none" id="svgimage" x="0" y="0" xlink:href="template.png"
+                @click="create2FigAtCoord($event)" @mousemove="readMouseMove($event)" />
+            <g v-for="figures in collOf2Figures" stroke="yellow" stroke-width="2" fill="pink">
+                <rect :width=figures.w1 :height=figures.h1 :x=figures.x1 :y=figures.y1>
             </g>
-
+            <g v-for="figures in collOf2Figures" stroke="yellow" stroke-width="2" fill="pink">
+                <rect :width=figures.w2 :height=figures.h2 :x=figures.x2 :y=figures.y2 @mousedown="moveFigAtDrag($event)">
+            </g>
+            <g>
+                <circle cx=150 cy=150 r=30 @click="toggleSel($event)" :fill=selectedCol></circle>
+            </g>
         </svg>
 
+        <p>{{monitorx}}</p>
+        <p>{{monitory}}</p>
     </div>
 
-
-    <input type="file" onchange="previewFile()"><br>
-    <img src="" height="400" alt="Image preview...">
+    <!-- @click="createFigAtCoord($event)"  -->
 
 
 
-
-
-
-    <svg id="svgmain" version="1.1" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#"
-        xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg"
-        xmlns:xlink="http://www.w3.org/1999/xlink" height="400" width="600" onmousemove="drag(evt)" onmouseup="release(evt)">
-        <image width="600" height="400" preserveAspectRatio="none" id="svgimage" x="0" y="0" xlink:href="motor.jpg" />
-        <rect id="jaja" class="btn" width="600" height="400" onclick="starter(evt)" fill="none"></rect>
-    </svg>
-
-    <button onclick="lagretblob()">klikk lagretblob</button>
-    <!-- <button onclick="nyblob()">klikk lagretblob</button> -->
     <script>
         var app = new Vue({
             el: '#app',
@@ -94,23 +169,34 @@
                     { navn: "Charlotte", poeng: 40 },
                     { navn: "Ragnhild", poeng: 23 }
                 ],
+
                 bredde: 100,
                 hoyde: 70,
-
+                monitorx: 0,
+                monitory: 0,
                 collOfFigures: [
 
                 ],
-                selected: 0
+
+                collOf2Figures: [
+
+                ],
+                showModal: 1,
+
+                selected: 0,
+
+                selectedCol: "yellow"
             },
+
             methods: {
                 calibrateClick: function () {
 
                 },
 
-                enterFigure: function () {
-                    var newInColl = { w: 20, h: 120, x: 90, y: 280 };
-                    this.collOfFigures.push(newInColl);
+                moveFigure: function () {
+
                 },
+
                 insertBalloon: function () {
 
                 },
@@ -120,13 +206,52 @@
                 },
 
                 createFigAtCoord: function (evt) {
-                    var cursvg = evt.target;
+                    var cursvg = evt.target.parentElement;
                     pt = cursvg.createSVGPoint();
                     pt.x = evt.clientX;
                     pt.y = evt.clientY;
                     var svgP = pt.matrixTransform(cursvg.getScreenCTM().inverse());
-                    var newInColl = { w: 20, h: 20, x: Math.round(svgP.x), y: Math.round(svgP.y) };
+                    var newInColl = { w: 20, h: 20, x1: Math.round(svgP.x), y1: Math.round(svgP.y) };
                     this.collOfFigures.push(newInColl);
+                },
+
+                create2FigAtCoord: function (evt) {
+                    var cursvg = evt.target.parentElement;
+                    pt = cursvg.createSVGPoint();
+                    pt.x = evt.clientX;
+                    pt.y = evt.clientY;
+                    var svgP = pt.matrixTransform(cursvg.getScreenCTM().inverse());
+                    var newInColl = { w1: 20, h1: 20, x1: Math.round(svgP.x), y1: Math.round(svgP.y), w2: 10, h2: 10, x2: (Math.round(svgP.x) + 30), y2: (Math.round(svgP.y) + 30) };
+                    this.collOf2Figures.push(newInColl);
+                },
+
+                moveFigAtDrag: function (evt) {
+                    var theSVGer = evt.target.getAttribute("key");
+                    alert(theSVGer);
+                },
+
+                readMouseMove: function (evt) {
+                    var cursvg = evt.target.parentElement;
+                    pt = cursvg.createSVGPoint();
+                    pt.x = evt.clientX;
+                    pt.y = evt.clientY;
+                    var svgP = pt.matrixTransform(cursvg.getScreenCTM().inverse());
+                    this.monitorx = Math.round(svgP.x);
+                    this.monitory = Math.round(svgP.y);
+                },
+
+                toggleSel: function (evt) {
+                    //alert("hallo");
+                    var myCircle = evt.target;
+                    if (this.selected == 0) {
+                        this.selected = 1
+                        this.selectedCol = "red"
+                        //evt.target.setAttributeNS(null, "fill", "red");
+                    } else {
+                        this.selected = 0;
+                        this.selectedCol = "yellow"
+                        //evt.target.setAttributeNS(null, "fill", "yellow");
+                    }
                 }
             }
         })
@@ -137,7 +262,6 @@
             var inSVG = document.getElementById("svgmain");
             var inSVGDoc = inSVG.contentDocument;
             var inBildet = inSVG.getElementById("svgimage");
-
             var inBildeadr = inBildet.setAttribute("xlink:href", blobby);
 
         }
