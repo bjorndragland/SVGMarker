@@ -197,7 +197,7 @@
                 collOf2Figures: [
 
                 ],
-                showModal: 1,
+                showModal: 0,
 
                 selected: 0,
 
@@ -267,6 +267,15 @@
                         this.selected = 0;
                         this.selectedCol = "yellow"
                         //evt.target.setAttributeNS(null, "fill", "yellow");
+                    }
+
+
+                },
+                startModal: function () {
+                    if (this.showModal == 0) {
+                        this.showModal = 1;
+                    } else {
+                        this.showModal = 0
                     }
                 }
             }
