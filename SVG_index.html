@@ -18,6 +18,16 @@
             background: rgb(114, 114, 114);
         }
 
+        .circle2 {
+            fill: rgb(173, 64, 64);
+            ;
+        }
+
+        .circle2:hover {
+            fill: rgb(45, 134, 17);
+            ;
+        }
+
         .modal {
             position: fixed;
             top: 0;
@@ -148,27 +158,37 @@
         <hr>
         <input v-model="bredde" />
         <input v-model="hoyde" />
+
         <button @click="enterFigure()">ny figur</button>
         <button @click="insertBalloon()">ny figur 2</button>
         <button @click="startModal()">modal</button>
+        <input type="radio" name="modus" value="nyfigur" checked="true">Ny figur<br>
+        <input type="radio" name="modus" value="flyttfigur">Flytt figur<br>
         <hr>
-        <svg id="mainframe" xmlns="http://www.w3.org/2000/svg" width="600" height="400" xmlns="http://www.w3.org/2000/svg"
-            version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink">
-            <image width="600" height="400" preserveAspectRatio="none" id="svgimage" x="0" y="0" xlink:href="template.png"
-                @click="create2FigAtCoord($event)" @mousemove="readMouseMove($event)" />
+        <svg id="mainframe" xmlns="http://www.w3.org/2000/svg" width="600" height="400"
+            xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink">
+            <image width="600" height="400" preserveAspectRatio="none" id="svgimage" x="0" y="0"
+                xlink:href="template.png" @click="create2FigAtCoord($event)" @mousemove="readMouseMove($event)" />
             <g v-for="figures in collOf2Figures" stroke="yellow" stroke-width="2" fill="pink">
                 <rect :width=figures.w1 :height=figures.h1 :x=figures.x1 :y=figures.y1>
             </g>
             <g v-for="figures in collOf2Figures" stroke="yellow" stroke-width="2" fill="pink">
-                <rect :width=figures.w2 :height=figures.h2 :x=figures.x2 :y=figures.y2 @mousedown="moveFigAtDrag($event)">
+                <rect :width=figures.w2 :height=figures.h2 :x=figures.x2 :y=figures.y2
+                    @mousedown="moveFigAtDrag($event)">
             </g>
             <g>
                 <circle cx=150 cy=150 r=30 @click="toggleSel($event)" :fill=selectedCol></circle>
             </g>
+
+
+            <circle class="circle2" cx=200 cy=50 r=20></circle>
+
         </svg>
+
 
         <p>{{monitorx}}</p>
         <p>{{monitory}}</p>
+        <p>{{selectedCol}}</p>
     </div>
 
     <!-- @click="createFigAtCoord($event)"  -->
@@ -180,6 +200,7 @@
             el: '#app',
             data: {
                 message: 'Hello Vue!',
+                staters: 0,
                 arrers: [
                     { navn: "Bjørn", poeng: 20 },
 
@@ -207,7 +228,9 @@
                 calibrateClick: function () {
 
                 },
+                changeStaters: function () {
 
+                },
                 moveFigure: function () {
 
                 },
@@ -241,8 +264,9 @@
                 },
 
                 moveFigAtDrag: function (evt) {
-                    var theSVGer = evt.target.getAttribute("key");
+                    var theSVGer = evt.target.getAttribute("name");
                     alert(theSVGer);
+                    //alert(evt.target);
                 },
 
                 readMouseMove: function (evt) {
@@ -280,7 +304,7 @@
             }
         })
 
-
+        // ikke-vue-funksjoner
         function lagretblob() {
             var preview = document.querySelector('img');
             var inSVG = document.getElementById("svgmain");
@@ -315,6 +339,14 @@
                 reader.readAsDataURL(file);
             }
         }
+
+
+        const arr = [10, 20, 30]
+
+        // equivalent to
+        // console.log(Math.max(10, 20, 30));
+        console.log(Math.max(...arr));    // → 30
+
 
     </script>
 
